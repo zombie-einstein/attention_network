@@ -1,5 +1,5 @@
 import tensorflow.keras.backend as K
-from tensorflow.keras import Variable
+from tensorflow import Variable
 from tensorflow.keras.layers import Layer
 from tensorflow.keras import initializers
 
