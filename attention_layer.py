@@ -1,7 +1,5 @@
 import tensorflow.keras.backend as K
-from tensorflow import Variable
 from tensorflow.keras.layers import Layer
-from tensorflow.keras import initializers
 
 
 class AttLayer(Layer):
@@ -16,10 +14,9 @@ class AttLayer(Layer):
         Args:
             attention_dim (int): Internal dimension of this layer
         """
-        self.init = initializers.get('normal')
+        super(AttLayer, self).__init__()
         self.supports_masking = True
         self.attention_dim = attention_dim
-        super(AttLayer, self).__init__()
 
     def build(self, input_shape):
         """
@@ -28,10 +25,9 @@ class AttLayer(Layer):
             input_shape (tuple): Shape of input layer (3D)
         """
         assert len(input_shape) == 3
-        self.W = Variable(self.init((input_shape[-1], self.attention_dim)), trainable=True)
-        self.b = Variable(self.init((self.attention_dim,)), trainable=True)
-        self.u = Variable(self.init((self.attention_dim, 1)), trainable=True)
-        super(AttLayer, self).build(input_shape)
+        self.w = self.add_weight(shape=(input_shape[-1], self.attention_dim), initializer='random_normal', trainable=True)
+        self.b = self.add_weight(shape=(self.attention_dim,), initializer='random_normal', trainable=True)
+        self.u = self.add_weight(shape=(self.attention_dim, 1), initializer='random_normal', trainable=True)
 
     def compute_mask(self, inputs, mask=None):
         return mask
@@ -49,7 +45,7 @@ class AttLayer(Layer):
         # size of x :[batch_size, sel_len, attention_dim]
         # size of u :[batch_size, attention_dim]
         # uit = tanh(xW+b)
-        uit = K.tanh(K.bias_add(K.dot(x, self.W), self.b))
+        uit = K.tanh(K.bias_add(K.dot(x, self.w), self.b))
         ait = K.dot(uit, self.u)
         ait = K.squeeze(ait, -1)
         ait = K.exp(ait)

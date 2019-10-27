@@ -23,7 +23,7 @@ class HAN:
         self.sentence_network.add(AttLayer(sentence_width))
 
         self.model = Sequential()
-        self.model.add(TimeDistributed(self.sentence_network, input_shape=input_shape))
+        self.model.add(TimeDistributed(self.sentence_network, input_shape=(input_shape[0], input_shape[1])))
         self.model.add(Bidirectional(GRU(model_width, return_sequences=True)))
         self.model.add(AttLayer(model_width))
         self.model.add(Dense(output_width, activation='sigmoid'))
@@ -83,7 +83,7 @@ class HAN:
         u_watt = normalize(u_watt, axis=1, norm='l2')
 
         sent_att = self.hidden_sent_output.predict(np.expand_dims(x, axis=0))
-        u_satt = np.exp(np.dot(np.tanh(np.dot(sent_att, self.sent_ctx_0)+self.sent_ctx_1), self.Sent_ctx_2)[0, :, 0])
-        u_satt = normalize(u_satt, axis=1, norm='l2')
+        u_satt = np.exp(np.dot(np.tanh(np.dot(sent_att, self.sent_ctx_0)+self.sent_ctx_1), self.Sent_ctx_2)[:, :, 0])
+        u_satt = normalize(u_satt, axis=1, norm='l2')[0]
 
-        return u_satt*u_watt
+        return (u_satt*u_watt.T).T
